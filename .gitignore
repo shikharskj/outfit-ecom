@@ -5,6 +5,13 @@ node_modules
 .pnp
 .pnp.js
 
+# One pnpm workspace for the whole repo: app-level workspace files and lockfiles
+# create separate installs (see scripts/check-single-workspace.mjs)
+apps/*/pnpm-workspace.yaml
+apps/*/pnpm-lock.yaml
+packages/*/pnpm-workspace.yaml
+packages/*/pnpm-lock.yaml
+
 # Local env files
 .env
 .env.local

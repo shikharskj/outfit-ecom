@@ -1,36 +1,32 @@
-import { Fragment } from "react";
 import ProductCard, { type ProductCardData } from "@/components/product/ProductCard";
-import PromoTile, { type PromoTileContent } from "@/components/categories/PromoTile";
+import type { BadgeKind } from "@/utils/productCardData";
 import { cx } from "@/utils/cx";
 
-// No hooks, so both server pages and client listings can render it.
+// No hooks, so both server pages and client listings can render it. Sits beside
+// the filter rail from lg up, so 3 columns there and 4 on very wide screens.
 export const productGridClassName =
-  "grid gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 lg:grid-cols-4";
+  "grid gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-10 2xl:grid-cols-4";
 
 // Phones can show one big card or two per row; wider screens are unaffected.
 export const MOBILE_GRID = {
-  1: { columns: "grid-cols-1", sizes: "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 100vw" },
-  2: { columns: "grid-cols-2", sizes: "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw" },
+  1: { columns: "grid-cols-1", sizes: "(min-width: 1536px) 20vw, (min-width: 640px) 33vw, 100vw" },
+  2: { columns: "grid-cols-2", sizes: "(min-width: 1536px) 20vw, (min-width: 640px) 33vw, 50vw" },
 };
-
-// The promo tile goes after the 8th product, then after every 12th.
-const PROMO_FIRST = 8;
-const PROMO_EVERY = 12;
-const isPromoSlot = (position: number) =>
-  position >= PROMO_FIRST && (position - PROMO_FIRST) % PROMO_EVERY === 0;
 
 type ProductGridProps = {
   products: ProductCardData[];
   mobileColumns?: 1 | 2;
   priorityCount?: number; // first N images load right away (above the fold)
-  promo?: PromoTileContent; // only placed when there are enough products
+  hideBadge?: BadgeKind; // the badge the page itself is about, e.g. "sale" on /sale
+  showSavings?: boolean; // "Save ₹X" under sale prices, e.g. on the sale page
 };
 
 export default function ProductGrid({
   products,
   mobileColumns = 2,
   priorityCount = 0,
-  promo,
+  hideBadge,
+  showSavings = false,
 }: ProductGridProps) {
   if (products.length === 0) {
     return (
@@ -50,15 +46,15 @@ export default function ProductGrid({
   return (
     <div className={cx(productGridClassName, mobile.columns)}>
       {products.map((product, index) => (
-        <Fragment key={product.id}>
-          <ProductCard
-            product={product}
-            sizes={mobile.sizes}
-            priority={index < priorityCount}
-            swipeImages
-          />
-          {promo && isPromoSlot(index + 1) && <PromoTile promo={promo} />}
-        </Fragment>
+        <ProductCard
+          key={product.id}
+          product={product}
+          sizes={mobile.sizes}
+          priority={index < priorityCount}
+          hideBadge={hideBadge}
+          showSavings={showSavings}
+          swipeImages
+        />
       ))}
     </div>
   );

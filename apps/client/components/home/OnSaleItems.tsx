@@ -41,6 +41,7 @@ export default async function OnSaleItems() {
         <ProductRail
           products={products.map(toProductCardData)}
           showSavings
+          hideBadge="sale"
           viewAll={{ label: "View all sale items", href: VIEW_ALL_HREF }}
         />
       </div>

@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import BackToTop from "@/components/shared/BackToTop";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
@@ -8,9 +7,11 @@ import GroupShelf from "@/components/categories/GroupShelf";
 import GroupTiles from "@/components/categories/GroupTiles";
 import ProductListing, { ProductListingView } from "@/components/categories/ProductListing";
 import { toProductCardData, type ProductCardData } from "@/utils/productCardData";
-import { cx } from "@/utils/cx";
-import { getListingPromo } from "@/utils/getListingPromo";
 import { getCategoryProducts, getTaxonomy, groupLabelOf } from "@/utils/getTaxonomy";
+import type { FacetKey } from "@/utils/productFilters";
+
+// Group pages filter by type; category pages filter by group instead.
+const FACETS: FacetKey[] = ["type", "size", "color", "price", "only"];
 
 // Groups smaller than this get a "You might also like" row to fill the page.
 const SMALL_GROUP = 8;
@@ -57,7 +58,13 @@ export default async function GroupPage({ params }: GroupPageProps) {
   const { category, group } = result;
   const products = result.products.map(toProductCardData);
   const otherGroups = category.groups.filter((entry) => entry.slug !== group.slug);
-  const promo = await getListingPromo();
+  // The rail's CATEGORY section: every group in this category, as links.
+  const categoryLinks = category.groups.map((entry) => ({
+    label: entry.label,
+    href: entry.href,
+    count: entry.count,
+    current: entry.slug === group.slug,
+  }));
 
   // A few products from each of the category's other groups, for small groups.
   let suggestions: ProductCardData[] = [];
@@ -74,7 +81,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1600px] px-5 py-10 sm:px-8 md:px-12 md:py-14">
+    <main className="mx-auto w-full max-w-[1600px] px-5 pt-6 pb-16 sm:px-8 md:px-12 md:pt-8">
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
@@ -83,48 +90,29 @@ export default async function GroupPage({ params }: GroupPageProps) {
         ]}
       />
 
-      <h1 className="text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
+      {/* Moving between groups happens in the rail's CATEGORY list. */}
+      {/* The live count sits in the top bar; phones hide it there, so show it here. */}
+      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-950">
         {group.label}
+        <span className="font-normal text-gray-500 md:hidden"> · {group.count} items</span>
       </h1>
-      <p className="mt-2 text-sm text-gray-600 sm:text-base">
-        {category.label} · {group.count} {group.count === 1 ? "product" : "products"}
-      </p>
-
-      {/* Jump between groups without going back to the category page. */}
-      {category.groups.length > 1 && (
-        <nav aria-label={`Other ${category.label} groups`} className="mt-6 mb-10">
-          <ul className="-mx-5 flex gap-x-6 overflow-x-auto border-b border-gray-200 px-5 scrollbar-none sm:mx-0 sm:px-0">
-            {category.groups.map((entry) => {
-              const isCurrent = entry.slug === group.slug;
-              return (
-                <li key={entry.slug} className="shrink-0">
-                  <Link
-                    href={entry.href}
-                    aria-current={isCurrent ? "page" : undefined}
-                    className={cx(
-                      "-mb-px block border-b-2 py-3 text-sm font-medium whitespace-nowrap transition-colors",
-                      isCurrent
-                        ? "border-gray-950 text-gray-950"
-                        : "border-transparent text-gray-500 hover:text-gray-950",
-                    )}
-                  >
-                    {entry.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      )}
 
       {/* Filters, sort and paging live in the URL, read at request time; until
           then the static HTML shows the first page, unfiltered. */}
       <Suspense
         fallback={
-          <ProductListingView products={products} types={group.types} promo={promo} />
+          <ProductListingView
+            products={products}
+            facetKeys={FACETS}
+            categoryLinks={categoryLinks}
+          />
         }
       >
-        <ProductListing products={products} types={group.types} promo={promo} />
+        <ProductListing
+          products={products}
+          facetKeys={FACETS}
+          categoryLinks={categoryLinks}
+        />
       </Suspense>
 
       {/* Don't end on a dead end: suggestions for small groups, then the rest

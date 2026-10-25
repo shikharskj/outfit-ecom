@@ -1,13 +1,41 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  type RefObject,
+  useEffect,
+  useOptimistic,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChevronSelectorVertical, Grid01, Square } from "@untitledui/icons";
+import { SwitchVertical01 } from "@untitledui/icons";
+import { Button } from "@/components/base/buttons/button";
+import { Select } from "@/components/base/select/select";
 import type { ProductCardData } from "@/components/product/ProductCard";
+import ActiveFilters from "@/components/categories/ActiveFilters";
+import FilterRail, {
+  type CategoryLink,
+} from "@/components/categories/FilterRail";
+import FilterSheet from "@/components/categories/FilterSheet";
 import ProductGrid from "@/components/categories/ProductGrid";
-import type { PromoTileContent } from "@/components/categories/PromoTile";
-import { FALLBACK_LABEL, slugify } from "@/utils/categories";
+import type { BadgeKind } from "@/utils/productCardData";
+import SizeDropdown from "@/components/categories/SizeDropdown";
 import { cx } from "@/utils/cx";
+import {
+  type FacetKey,
+  type FilterState,
+  activeFilterCount,
+  activeFilterList,
+  applyFilters,
+  buildFacets,
+  emptyFilters,
+  parseFilters,
+  sanitizeFilters,
+  serializeFilters,
+  setPriceRange,
+  toggleFilter,
+} from "@/utils/productFilters";
 
 export const PAGE_SIZE = 24;
 const PRIORITY_COUNT = 4; // roughly the first row on desktop
@@ -23,19 +51,27 @@ const SORTS = {
   },
   "price-asc": {
     label: "Price: low to high",
-    compare: (a: ProductCardData, b: ProductCardData) => a.price.current - b.price.current,
+    compare: (a: ProductCardData, b: ProductCardData) =>
+      a.price.current - b.price.current,
   },
   "price-desc": {
     label: "Price: high to low",
-    compare: (a: ProductCardData, b: ProductCardData) => b.price.current - a.price.current,
+    compare: (a: ProductCardData, b: ProductCardData) =>
+      b.price.current - a.price.current,
   },
   discount: {
     label: "Biggest discount",
-    compare: (a: ProductCardData, b: ProductCardData) => discountOf(b) - discountOf(a),
+    compare: (a: ProductCardData, b: ProductCardData) =>
+      discountOf(b) - discountOf(a),
   },
 } as const;
 
 export type SortKey = keyof typeof SORTS;
+
+const SORT_ITEMS = Object.entries(SORTS).map(([id, sort]) => ({
+  id,
+  label: sort.label,
+}));
 
 const isSortKey = (value: string | null): value is SortKey =>
   value !== null && value in SORTS;
@@ -43,218 +79,283 @@ const isSortKey = (value: string | null): value is SortKey =>
 const discountOf = ({ price }: ProductCardData) =>
   price.regular > 0 ? (price.regular - price.current) / price.regular : 0;
 
-type FilterType = { slug: string; label: string; count: number };
-
-const chipClassName = (isSelected: boolean) =>
-  cx(
-    "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-950",
-    isSelected
-      ? "bg-gray-950 text-white"
-      : "text-gray-700 ring-1 ring-gray-300 ring-inset hover:bg-gray-100",
-  );
-
-const toggleClassName = (isSelected: boolean) =>
-  cx(
-    "grid size-9 place-items-center rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-950",
-    isSelected ? "bg-gray-950 text-white" : "text-gray-500 hover:bg-gray-100",
-  );
-
-const typeSlugOf = (product: ProductCardData) =>
-  slugify(product.productType || FALLBACK_LABEL);
-
 type ProductListingViewProps = {
   products: ProductCardData[];
-  types?: FilterType[]; // type chips show when there are two or more
-  selected?: Set<string>;
+  facetKeys: FacetKey[]; // which filters this page offers
+  categoryLinks?: CategoryLink[]; // group pages: sibling groups in the rail
+  showSavings?: boolean; // "Save ₹X" on cards, e.g. on the sale page
+  hideBadge?: BadgeKind; // the badge the page itself is about, e.g. "sale" on /sale
+  filters?: FilterState;
   shown?: number;
   sort?: SortKey;
-  mobileColumns?: 1 | 2;
-  promo?: PromoTileContent; // placed in the grid on unfiltered, unsorted views
-  onToggleType?: (slug: string) => void;
-  onClearTypes?: () => void;
+  onToggleFilter?: (key: FacetKey, value: string) => void;
+  onSizeChange?: (sizes: Set<string>) => void;
+  onPriceChange?: (min: number | null, max: number | null) => void;
+  onClearFilters?: () => void;
+  onSheetOpenChange?: (open: boolean) => void;
+  isPending?: boolean; // results are updating after a change
+  resultsRef?: RefObject<HTMLDivElement | null>; // scrolled to after filtering
   onLoadMore?: () => void;
   onSortChange?: (sort: SortKey) => void;
-  onMobileColumnsChange?: (columns: 1 | 2) => void;
 };
 
-// Toolbar, grid and "Load more" without the URL wiring. Pages render this as
-// the Suspense fallback, so the static HTML already shows the first page.
+// Filter rail, top bar, grid and "Load more" without the URL wiring. Pages
+// render this as the Suspense fallback, so the static HTML already shows the
+// first page and the filters.
 export function ProductListingView({
   products,
-  types = [],
-  selected = new Set(),
+  facetKeys,
+  categoryLinks,
+  showSavings,
+  hideBadge,
+  filters: requestedFilters = emptyFilters(),
   shown = PAGE_SIZE,
   sort = "recommended",
-  mobileColumns = 2,
-  promo,
-  onToggleType,
-  onClearTypes,
+  onToggleFilter = () => {},
+  onSizeChange = () => {},
+  onPriceChange = () => {},
+  onClearFilters = () => {},
+  onSheetOpenChange,
+  isPending = false,
+  resultsRef,
   onLoadMore,
   onSortChange,
-  onMobileColumnsChange,
 }: ProductListingViewProps) {
-  const filtered =
-    selected.size === 0
-      ? products
-      : products.filter((product) => selected.has(typeSlugOf(product)));
+  // Options come from all products, so they don't depend on the filters; only
+  // the counts do. Ignore URL values the page doesn't offer.
+  const filters = sanitizeFilters(
+    requestedFilters,
+    buildFacets(products, requestedFilters, facetKeys),
+  );
+  const facets = buildFacets(products, filters, facetKeys);
+  // Size sits in the top bar; everything else goes in the rail.
+  const sizeFacet = facets.find((facet) => facet.key === "size");
+  const railFacets = facets.filter((facet) => facet.key !== "size");
+  const active = activeFilterList(filters, facets);
+  const activeCount = activeFilterCount(filters);
+
   // Filter, then sort, then page.
+  const filtered = applyFilters(products, filters);
   const { compare } = SORTS[sort];
   const sorted = compare ? [...filtered].sort(compare) : filtered;
   const visible = sorted.slice(0, shown);
   const total = filtered.length;
-  // The promo tile only interrupts the plain, default view.
-  const showPromo = selected.size === 0 && sort === "recommended";
+
+  // With no results, suggest the single removal that brings back the most.
+  const rescue =
+    total === 0 && active.length > 0
+      ? active
+          .map((filter) => ({
+            filter,
+            count: applyFilters(
+              products,
+              toggleFilter(filters, filter.key, filter.value),
+            ).length,
+          }))
+          .sort((a, b) => b.count - a.count)[0]
+      : null;
+
+  const rail = (
+    <FilterRail
+      facets={railFacets}
+      state={filters}
+      categoryLinks={categoryLinks}
+      onToggle={onToggleFilter}
+      onPriceChange={onPriceChange}
+    />
+  );
 
   return (
-    <>
-      {types.length > 1 && (
-        <div
-          role="group"
-          aria-label="Filter by type"
-          className="-mx-5 mb-4 flex gap-2 overflow-x-auto px-5 scrollbar-none sm:mx-0 sm:flex-wrap sm:px-0"
-        >
-          <button
-            type="button"
-            aria-pressed={selected.size === 0}
-            onClick={onClearTypes}
-            className={chipClassName(selected.size === 0)}
-          >
-            All
-          </button>
-          {types.map((type) => (
-            <button
-              key={type.slug}
-              type="button"
-              aria-pressed={selected.has(type.slug)}
-              onClick={() => onToggleType?.(type.slug)}
-              className={chipClassName(selected.has(type.slug))}
-            >
-              {type.label}
-              <span className="ml-1.5 opacity-60">{type.count}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Sticks under the navbar (h-20) so sorting stays in reach on long lists.
-          The negative margins stretch its background to the page edges. */}
-      <div className="sticky top-20 z-30 -mx-5 mb-6 flex items-center justify-between gap-4 border-b border-gray-200 bg-white/90 px-5 py-3 backdrop-blur sm:-mx-8 sm:px-8 md:-mx-12 md:px-12">
-        <p aria-live="polite" className="text-sm text-gray-500">
-          {total === products.length
-            ? `${total} ${total === 1 ? "product" : "products"}`
-            : `${total} of ${products.length} products`}
-        </p>
-
-        <div className="flex items-center gap-2">
-          <label className="relative flex items-center">
-            <span className="sr-only">Sort by</span>
-            <select
-              value={sort}
-              onChange={(event) => onSortChange?.(event.target.value as SortKey)}
-              className="appearance-none rounded-full bg-white py-2 pr-9 pl-4 text-sm font-medium text-gray-950 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-950"
-            >
-              {Object.entries(SORTS).map(([key, option]) => (
-                <option key={key} value={key}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <ChevronSelectorVertical
-              aria-hidden="true"
-              className="pointer-events-none absolute right-3 size-4 text-gray-500"
-            />
-          </label>
-
-          {/* Phones only: one big card per row, or two. */}
-          <div role="group" aria-label="Layout" className="flex gap-1 sm:hidden">
-            <button
-              type="button"
-              aria-label="1 column"
-              aria-pressed={mobileColumns === 1}
-              onClick={() => onMobileColumnsChange?.(1)}
-              className={toggleClassName(mobileColumns === 1)}
-            >
-              <Square aria-hidden="true" className="size-4" />
-            </button>
-            <button
-              type="button"
-              aria-label="2 columns"
-              aria-pressed={mobileColumns === 2}
-              onClick={() => onMobileColumnsChange?.(2)}
-              className={toggleClassName(mobileColumns === 2)}
-            >
-              <Grid01 aria-hidden="true" className="size-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <ProductGrid
-        products={visible}
-        mobileColumns={mobileColumns}
-        priorityCount={PRIORITY_COUNT}
-        promo={showPromo ? promo : undefined}
-      />
-
-      {total > PAGE_SIZE && (
-        <div className="mx-auto mt-12 flex max-w-xs flex-col items-center gap-3 text-center">
-          <p className="text-sm text-gray-600">
-            Showing {visible.length} of {total}
-          </p>
-          <div
-            role="progressbar"
-            aria-label="Products shown"
-            aria-valuemin={0}
-            aria-valuemax={total}
-            aria-valuenow={visible.length}
-            className="h-1 w-full overflow-hidden rounded-full bg-gray-200"
-          >
-            <div
-              className="h-full rounded-full bg-gray-950 motion-safe:transition-[width]"
-              style={{ width: `${(visible.length / total) * 100}%` }}
-            />
-          </div>
-          {visible.length < total && (
-            <button
-              type="button"
-              onClick={onLoadMore}
-              className="mt-2 rounded-full px-8 py-3 text-sm font-semibold text-gray-950 ring-1 ring-gray-300 ring-inset hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-950"
-            >
-              Load more
-            </button>
+    <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[16rem_minmax(0,1fr)]">
+      {/* Desktop: the rail stays in view under the navbar while products
+          scroll, and scrolls on its own if it's taller than the screen. */}
+      <aside
+        aria-label="Filters"
+        className="sticky top-20 hidden max-h-[calc(100dvh-5rem)] self-start overflow-y-auto border-r border-gray-200 pr-6 pb-6 scrollbar-none lg:block"
+      >
+        {/* Same height as the top bar, so FILTERS lines up with Size and Sort. */}
+        <div className="flex h-16 items-center justify-between">
+          <h2 className="text-sm font-bold tracking-wider text-gray-950 uppercase">
+            Filters
+          </h2>
+          {activeCount > 0 && (
+            <Button color="link-gray" size="sm" onPress={onClearFilters}>
+              Clear all
+            </Button>
           )}
         </div>
-      )}
-    </>
+        {rail}
+      </aside>
+
+      <div className="min-w-0">
+        {/* Size and Sort above the products, sticky under the navbar (h-20).
+            Below lg it stretches to the page edges. */}
+        <div className="sticky top-20 z-30 -mx-5 mb-4 flex h-16 items-center justify-between gap-2 border-b border-gray-200 bg-white px-5 sm:-mx-8 sm:px-8 md:-mx-12 md:px-12 lg:mx-0 lg:px-0">
+          <div className="flex items-center gap-2">
+            <FilterSheet
+              activeCount={activeCount}
+              resultCount={total}
+              onClearAll={onClearFilters}
+              onOpenChange={onSheetOpenChange}
+            >
+              {rail}
+            </FilterSheet>
+            {sizeFacet && (
+              <SizeDropdown
+                facet={sizeFacet}
+                selected={filters.size}
+                onChange={onSizeChange}
+              />
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            <p
+              aria-live="polite"
+              className="hidden text-sm text-gray-500 md:block"
+            >
+              {total === products.length
+                ? `${total} ${total === 1 ? "item" : "items"}`
+                : `${total} of ${products.length} items`}
+            </p>
+            <Select
+              aria-label="Sort by"
+              size="sm"
+              icon={SwitchVertical01}
+              items={SORT_ITEMS}
+              selectedKey={sort}
+              onSelectionChange={(key) => {
+                if (key !== null && isSortKey(String(key)))
+                  onSortChange?.(String(key) as SortKey);
+              }}
+              className="w-44 sm:w-52"
+            >
+              {(item) => <Select.Item id={item.id} label={item.label} />}
+            </Select>
+          </div>
+        </div>
+
+        <ActiveFilters
+          filters={active}
+          onRemove={onToggleFilter}
+          onClearAll={onClearFilters}
+        />
+
+        {/* Results: dimmed while an update is in flight, and the scroll target
+            after a filter change (scroll-mt clears the sticky navbar + top bar). */}
+        <div
+          ref={resultsRef}
+          aria-busy={isPending}
+          className={cx(
+            "scroll-mt-40 motion-safe:transition-opacity",
+            isPending && "opacity-60",
+          )}
+        >
+          {total === 0 ? (
+            <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-gray-300 px-6 py-16 text-center">
+              <p className="text-base font-semibold text-gray-950">
+                No products match these filters
+              </p>
+              {rescue && rescue.count > 0 && (
+                <Button
+                  color="primary"
+                  size="md"
+                  onPress={() =>
+                    onToggleFilter(rescue.filter.key, rescue.filter.value)
+                  }
+                >
+                  Remove “{rescue.filter.label}” to see {rescue.count}{" "}
+                  {rescue.count === 1 ? "product" : "products"}
+                </Button>
+              )}
+              <Button color="secondary" size="md" onPress={onClearFilters}>
+                Clear all filters
+              </Button>
+            </div>
+          ) : (
+            <ProductGrid
+              products={visible}
+              priorityCount={PRIORITY_COUNT}
+              hideBadge={hideBadge}
+              showSavings={showSavings}
+            />
+          )}
+
+          {total > PAGE_SIZE && (
+            <div className="mx-auto mt-12 flex max-w-xs flex-col items-center gap-3 text-center">
+              <p className="text-sm text-gray-600">
+                Showing {visible.length} of {total}
+              </p>
+              <div
+                role="progressbar"
+                aria-label="Products shown"
+                aria-valuemin={0}
+                aria-valuemax={total}
+                aria-valuenow={visible.length}
+                className="h-1 w-full overflow-hidden rounded-full bg-gray-200"
+              >
+                <div
+                  className="h-full rounded-full bg-gray-950 motion-safe:transition-[width]"
+                  style={{ width: `${(visible.length / total) * 100}%` }}
+                />
+              </div>
+              {visible.length < total && (
+                <Button
+                  color="secondary"
+                  size="lg"
+                  className="mt-2"
+                  onPress={onLoadMore}
+                >
+                  Load more
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
 type ProductListingProps = {
   products: ProductCardData[];
-  types?: FilterType[];
-  promo?: PromoTileContent;
+  facetKeys: FacetKey[];
+  categoryLinks?: CategoryLink[];
+  showSavings?: boolean;
+  hideBadge?: BadgeKind;
 };
 
-// Product list with type chips (?type=a,b), sort (?sort=price-asc) and paging
-// (?show=48), all kept in the URL so views can be shared and the back button
-// returns to the same spot.
-// Everything runs in the browser for now; with a real catalogue, the same URL
-// parameters move to the server and the API pages and filters.
-export default function ProductListing({ products, types = [], promo }: ProductListingProps) {
+// Product list with filters (?size=m&color=black…), sort (?sort=price-asc) and
+// paging (?show=48), all kept in the URL so views can be shared and the back
+// button returns to the same spot. Changing filters or sort starts back at the
+// first page.
+export default function ProductListing({
+  products,
+  facetKeys,
+  categoryLinks,
+  showSavings,
+  hideBadge,
+}: ProductListingProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [mobileColumns, setMobileColumns] = useState<1 | 2>(2);
+  const resultsRef = useRef<HTMLDivElement>(null);
   // Where focus goes after "Load more": the first newly shown product.
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-  const known = new Set(types.map((type) => type.slug));
-  const selected = new Set(
-    (searchParams.get("type") ?? "").split(",").filter((slug) => known.has(slug)),
+  // URL updates run in a transition. Meanwhile the optimistic copy shows the
+  // new filters straight away, so checkboxes and counts react on click.
+  const [isPending, startTransition] = useTransition();
+  const [filters, setOptimisticFilters] = useOptimistic(
+    parseFilters(searchParams, facetKeys),
   );
   const requested = Number(searchParams.get("show"));
-  const shown = Number.isInteger(requested) && requested > PAGE_SIZE ? requested : PAGE_SIZE;
+  const shown =
+    Number.isInteger(requested) && requested > PAGE_SIZE
+      ? requested
+      : PAGE_SIZE;
   const sortParam = searchParams.get("sort");
   const sort: SortKey = isSortKey(sortParam) ? sortParam : "recommended";
 
@@ -265,23 +366,38 @@ export default function ProductListing({ products, types = [], promo }: ProductL
       else params.set(key, value);
     }
     const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
   };
 
-  // A new type selection starts back at the first page.
-  const setTypes = (next: Set<string>) =>
-    replaceParams({ type: next.size ? [...next].join(",") : null, show: null });
-
-  const toggleType = (slug: string) => {
-    const next = new Set(selected);
-    if (next.has(slug)) next.delete(slug);
-    else next.add(slug);
-    setTypes(next);
+  // If the shopper has scrolled past the top of the results, bring them back
+  // so they see the new results rather than the middle of a changed list.
+  const scrollToResults = () => {
+    const results = resultsRef.current;
+    if (!results || results.getBoundingClientRect().top >= 0) return;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    results.scrollIntoView({
+      block: "start",
+      behavior: reduceMotion ? "auto" : "smooth",
+    });
   };
 
-  // A new order starts back at the first page too.
+  const setFilters = (next: FilterState) => {
+    startTransition(() => {
+      setOptimisticFilters(next);
+      replaceParams({ ...serializeFilters(next), show: null });
+    });
+    // From the phone sheet, scroll once it closes instead (the page is locked).
+    if (!sheetOpen) scrollToResults();
+  };
+
   const setSort = (next: SortKey) =>
-    replaceParams({ sort: next === "recommended" ? null : next, show: null });
+    startTransition(() =>
+      replaceParams({ sort: next === "recommended" ? null : next, show: null }),
+    );
 
   const loadMore = () => {
     setFocusIndex(shown);
@@ -290,7 +406,9 @@ export default function ProductListing({ products, types = [], promo }: ProductL
 
   useEffect(() => {
     if (focusIndex === null) return;
-    const links = containerRef.current?.querySelectorAll<HTMLElement>("[data-product-link]");
+    const links = containerRef.current?.querySelectorAll<HTMLElement>(
+      "[data-product-link]",
+    );
     const target = links?.[focusIndex];
     if (target) {
       target.focus();
@@ -302,17 +420,29 @@ export default function ProductListing({ products, types = [], promo }: ProductL
     <div ref={containerRef}>
       <ProductListingView
         products={products}
-        types={types}
-        selected={selected}
+        facetKeys={facetKeys}
+        categoryLinks={categoryLinks}
+        showSavings={showSavings}
+        hideBadge={hideBadge}
+        filters={filters}
         shown={shown}
         sort={sort}
-        mobileColumns={mobileColumns}
-        promo={promo}
-        onToggleType={toggleType}
-        onClearTypes={() => setTypes(new Set())}
+        onToggleFilter={(key, value) =>
+          setFilters(toggleFilter(filters, key, value))
+        }
+        onSizeChange={(sizes) => setFilters({ ...filters, size: sizes })}
+        onPriceChange={(min, max) =>
+          setFilters(setPriceRange(filters, min, max))
+        }
+        onClearFilters={() => setFilters(emptyFilters())}
+        onSheetOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) scrollToResults();
+        }}
+        isPending={isPending}
+        resultsRef={resultsRef}
         onLoadMore={loadMore}
         onSortChange={setSort}
-        onMobileColumnsChange={setMobileColumns}
       />
     </div>
   );

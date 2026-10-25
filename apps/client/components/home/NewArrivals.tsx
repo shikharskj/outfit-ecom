@@ -43,7 +43,7 @@ export default async function NewArrivals() {
 
         <ProductRail
           products={products.map(toProductCardData)}
-          showNewBadge={false}
+          hideBadge="new"
           viewAll={{ label: "View all new arrivals", href: VIEW_ALL_HREF }}
           tone="dark"
         />

@@ -1,6 +1,6 @@
 // Sale banner content and colour themes. A plain module (no JSX, no "use
-// client") so the home banner, list-page strip, promo tile and data mocks can
-// all share them without depending on each other.
+// client") so the home banner and the data mocks can share them without
+// depending on each other.
 
 export type SaleBannerTheme = keyof typeof SALE_BANNER_THEMES;
 

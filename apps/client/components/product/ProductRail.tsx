@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "@untitledui/icons";
 import { Carousel } from "@/components/application/carousel/carousel-base";
 import ProductCard, { type ProductCardData } from "@/components/product/ProductCard";
+import type { BadgeKind } from "@/utils/productCardData";
 import {
   productRailImageSizes,
   productRailItemClassName,
@@ -41,7 +42,7 @@ const TONES = {
 
 type ProductRailProps = {
   products: ProductCardData[]; // already mixed across categories
-  showNewBadge?: boolean;
+  hideBadge?: BadgeKind; // the badge the section is about, e.g. "new" in New arrivals
   showSavings?: boolean;
   viewAll?: { label: string; href: string }; // full-width button on phones
   tone?: SectionTone;
@@ -50,7 +51,7 @@ type ProductRailProps = {
 // A swipeable row of product cards with category filter chips.
 export default function ProductRail({
   products,
-  showNewBadge = true,
+  hideBadge,
   showSavings = false,
   viewAll,
   tone = "light",
@@ -143,7 +144,7 @@ export default function ProductRail({
               <ProductCard
                 product={product}
                 sizes={productRailImageSizes}
-                showNewBadge={showNewBadge}
+                hideBadge={hideBadge}
                 showSavings={showSavings}
                 tone={tone}
               />

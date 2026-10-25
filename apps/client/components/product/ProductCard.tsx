@@ -3,19 +3,24 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { ProductCardData } from "@/utils/productCardData";
+import type { BadgeKind, ProductCardData } from "@/utils/productCardData";
 import { cx } from "@/utils/cx";
 import type { SectionTone } from "@/components/product/productRailStyles";
 import ProductCardActions from "@/components/product/ProductCardActions";
 
 const MAX_SWATCHES = 4;
+const MAX_BADGES = 2;
+
+// Small, quiet labels on the image: the photo stays the focus.
+const badgeClassName =
+  "rounded-sm bg-white/90 px-1.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase";
 
 // Text colours for white and black sections. The lighter reds and oranges keep
 // readable contrast on black.
 const TONES = {
   light: {
     focus: "focus-visible:after:outline-gray-950",
-    imageBg: "bg-gray-100",
+    imageBg: "bg-gray-50",
     name: "text-gray-950",
     price: "text-gray-950",
     salePrice: "text-red-700",
@@ -51,7 +56,7 @@ const formatPrice = (amount: number, currency: string) =>
 type ProductCardProps = {
   product: ProductCardData;
   sizes: string; // passed to next/image so each layout downloads the right width
-  showNewBadge?: boolean; // off inside sections that are already "new"
+  hideBadge?: BadgeKind; // the badge the page itself is about, e.g. "sale" on /sale
   showSavings?: boolean; // "Save ₹X" under sale prices
   tone?: SectionTone;
   priority?: boolean; // load the image right away (first row of a list page)
@@ -63,7 +68,7 @@ type ProductCardProps = {
 export default function ProductCard({
   product,
   sizes,
-  showNewBadge = true,
+  hideBadge,
   showSavings = false,
   tone = "light",
   priority = false,
@@ -100,6 +105,21 @@ export default function ProductCard({
   const [activeSlide, setActiveSlide] = useState(0);
 
   const soldOut = sizeCount > 0 && inStockCount === 0;
+
+  // At most two badges, most important first: Sold out > Sale > Bestseller > New.
+  const badges = [
+    soldOut && { label: "Sold out", className: "text-gray-950" },
+    price.onSale &&
+      hideBadge !== "sale" && {
+        label: price.discountPercentage ?? "Sale",
+        className: "text-red-700",
+      },
+    product.isBestSeller &&
+      hideBadge !== "bestseller" && { label: "Bestseller", className: "text-gray-950" },
+    product.isNewArrival && hideBadge !== "new" && { label: "New", className: "text-gray-950" },
+  ]
+    .filter((badge): badge is { label: string; className: string } => Boolean(badge))
+    .slice(0, MAX_BADGES);
   // One-size items (most beauty and home) never count as running low.
   const fewSizesLeft = !soldOut && sizeCount > 1 && inStockCount / sizeCount <= 0.5;
 
@@ -187,21 +207,11 @@ export default function ProductCard({
         )}
 
         <div className="pointer-events-none absolute left-2 top-2 z-10 flex flex-wrap gap-1.5 sm:left-3 sm:top-3">
-          {soldOut && (
-            <span className="rounded-full bg-gray-950 px-2 py-0.5 text-xs font-semibold text-white">
-              Sold out
+          {badges.map((badge) => (
+            <span key={badge.label} className={cx(badgeClassName, badge.className)}>
+              {badge.label}
             </span>
-          )}
-          {showNewBadge && product.isNewArrival && (
-            <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-gray-950">
-              New
-            </span>
-          )}
-          {price.onSale && price.discountPercentage && (
-            <span className="rounded-full bg-red-700 px-2 py-0.5 text-xs font-semibold text-white">
-              {price.discountPercentage}
-            </span>
-          )}
+          ))}
         </div>
 
         <ProductCardActions product={product} />
@@ -268,54 +278,57 @@ export default function ProductCard({
           </p>
         )}
 
-        {colorVariants.length > 1 && (
-          // Above the stretched link (relative z-10) so the dots are clickable.
-          <div
-            role="group"
-            aria-label={`${colorVariants.length} colours`}
-            className="relative z-10 mt-1.5 -ml-1.5 flex w-fit items-center"
-            onMouseLeave={() => setPreviewCode(null)}
-          >
-            {colorVariants.slice(0, MAX_SWATCHES).map((variant) => {
-              const isSelected = variant.articleCode === selectedCode;
-              return (
-                <button
-                  key={variant.articleCode}
-                  type="button"
-                  aria-label={`Show ${variant.colorName}`}
-                  aria-pressed={isSelected}
-                  title={variant.colorName}
-                  onClick={() => {
-                    setSelectedCode(variant.articleCode);
-                    setActiveSlide(0);
-                  }}
-                  onPointerEnter={(event) => {
-                    // Mouse only: on touch a tap selects, without a preview step.
-                    if (event.pointerType === "mouse") setPreviewCode(variant.articleCode);
-                  }}
-                  className={cx(
-                    "grid size-6 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-0",
-                    colors.dotFocus,
-                  )}
-                >
-                  <span
-                    aria-hidden="true"
+        {/* Fixed height whether or not there are dots, so cards in a row line up. */}
+        <div className="mt-1.5 h-6">
+          {colorVariants.length > 1 && (
+            // Above the stretched link (relative z-10) so the dots are clickable.
+            <div
+              role="group"
+              aria-label={`${colorVariants.length} colours`}
+              className="relative z-10 -ml-1.5 flex w-fit items-center"
+              onMouseLeave={() => setPreviewCode(null)}
+            >
+              {colorVariants.slice(0, MAX_SWATCHES).map((variant) => {
+                const isSelected = variant.articleCode === selectedCode;
+                return (
+                  <button
+                    key={variant.articleCode}
+                    type="button"
+                    aria-label={`Show ${variant.colorName}`}
+                    aria-pressed={isSelected}
+                    title={variant.colorName}
+                    onClick={() => {
+                      setSelectedCode(variant.articleCode);
+                      setActiveSlide(0);
+                    }}
+                    onPointerEnter={(event) => {
+                      // Mouse only: on touch a tap selects, without a preview step.
+                      if (event.pointerType === "mouse") setPreviewCode(variant.articleCode);
+                    }}
                     className={cx(
-                      "size-3 rounded-full ring-1",
-                      isSelected ? colors.swatchSelected : colors.swatchRing,
+                      "grid size-6 place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-0",
+                      colors.dotFocus,
                     )}
-                    style={{ backgroundColor: variant.hex }}
-                  />
-                </button>
-              );
-            })}
-            {extraSwatches > 0 && (
-              <span aria-hidden="true" className={cx("text-xs", colors.muted)}>
-                +{extraSwatches}
-              </span>
-            )}
-          </div>
-        )}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={cx(
+                        "size-3 rounded-full ring-1",
+                        isSelected ? colors.swatchSelected : colors.swatchRing,
+                      )}
+                      style={{ backgroundColor: variant.hex }}
+                    />
+                  </button>
+                );
+              })}
+              {extraSwatches > 0 && (
+                <span aria-hidden="true" className={cx("text-xs", colors.muted)}>
+                  +{extraSwatches}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </article>
   );

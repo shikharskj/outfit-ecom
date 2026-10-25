@@ -8,6 +8,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
 import SiteNavbar, { fallbackNavCategories } from "@/components/layout/SiteNavbar";
+import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Footer from "@/components/layout/Footer";
 
 const inter = Inter({
@@ -43,6 +44,9 @@ export default function RootLayout({
           <ThemeProvider>
             <ShopStoreProvider>
               <div className="max-w-screen mx-auto min-h-screen">
+                <Suspense fallback={null}>
+                  <AnnouncementBar />
+                </Suspense>
                 <Suspense fallback={<Navbar categories={fallbackNavCategories} />}>
                   <SiteNavbar />
                 </Suspense>

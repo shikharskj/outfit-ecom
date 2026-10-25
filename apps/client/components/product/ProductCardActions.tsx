@@ -78,14 +78,14 @@ export default function ProductCardActions({
             onPress={() => toggleWishlist(product)}
             className={({ isFocusVisible }) =>
               cx(
-                "grid size-9 place-items-center rounded-full bg-white text-gray-950 shadow-sm transition-colors hover:bg-gray-100",
+                "grid size-8 place-items-center rounded-full bg-white/80 text-gray-950 shadow-xs backdrop-blur-sm transition-colors hover:bg-white",
                 isFocusVisible && "outline-2 outline-offset-2 outline-gray-950",
               )
             }
           >
             <Heart
               aria-hidden="true"
-              className={cx("size-5", saved && "fill-red-600 text-red-600")}
+              className={cx("size-4.5", saved && "fill-red-600 text-red-600")}
             />
           </TooltipTrigger>
         </Tooltip>
@@ -130,7 +130,7 @@ export default function ProductCardActions({
           aria-haspopup={needsSize ? "true" : undefined}
           aria-expanded={needsSize ? pickerOpen : undefined}
           onClick={() => onAddClick(touchTriggerRef.current)}
-          className="grid size-10 place-items-center rounded-full bg-white text-gray-950 shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-950 disabled:opacity-50"
+          className="grid size-9 place-items-center rounded-full bg-white/80 text-gray-950 shadow-xs backdrop-blur-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-950 disabled:opacity-50"
         >
           {justAdded ? (
             <Check aria-hidden="true" className="size-5" />

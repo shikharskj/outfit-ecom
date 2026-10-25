@@ -9,13 +9,14 @@ import {
   //   Youtube,
   Mail01,
 } from "@untitledui/icons";
+import { CATEGORIES, categoryHref } from "@/utils/categories";
 
+// Categories come from the shared list so the links can't drift from the
+// real routes; then the cross-category collections.
 const shopLinks = [
-  { label: "Men", href: "/men" },
-  { label: "Women", href: "/women" },
-  { label: "Kids", href: "/kids" },
-  { label: "Home", href: "/home" },
-  { label: "Beauty", href: "/beauty" },
+  ...CATEGORIES.map((category) => ({ label: category.label, href: categoryHref(category.slug) })),
+  { label: "New in", href: "/new-arrivals" },
+  { label: "Sale", href: "/sale" },
   { label: "Bestsellers", href: "/bestsellers" },
 ];
 

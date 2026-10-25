@@ -36,6 +36,7 @@ export type Product = {
   sizes: { sizeCode: string; name: string; inStock: boolean }[];
   availability: string | null;
   isNewArrival: boolean;
+  isBestSeller: boolean; // shown with a "Bestseller" badge and on /bestsellers
   tags: (
     "new" | "sale" | "premium" | "sustainable" | "basics" | "divided" | "denim"
   )[];
@@ -159,6 +160,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "divided", "basics"],
         markers: [],
         description:
@@ -296,6 +298,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "divided"],
         markers: [],
         description:
@@ -464,6 +467,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -586,6 +590,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "divided"],
         markers: [],
         description:
@@ -756,6 +761,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable", "divided", "basics"],
         markers: [],
         description:
@@ -930,6 +936,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "divided", "basics"],
         markers: [],
         description:
@@ -1150,6 +1157,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "denim"],
         markers: [],
         description:
@@ -1315,6 +1323,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["sustainable", "divided"],
         markers: [],
         description:
@@ -1489,6 +1498,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "divided", "basics"],
         markers: [],
         description:
@@ -1643,6 +1653,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -1814,6 +1825,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "basics"],
         markers: [],
         description:
@@ -1962,6 +1974,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable"],
         markers: [],
         description:
@@ -2094,6 +2107,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: true,
         tags: ["new", "divided"],
         markers: [],
         description:
@@ -2229,6 +2243,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "divided"],
         markers: [],
         description:
@@ -2415,6 +2430,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "divided", "basics"],
         markers: [],
         description:
@@ -2572,6 +2588,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["basics"],
         markers: [],
         description:
@@ -2734,6 +2751,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["basics"],
         markers: [],
         description:
@@ -2877,6 +2895,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -3019,6 +3038,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["divided"],
         markers: [],
         description:
@@ -3273,6 +3293,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["divided"],
         markers: [],
         description:
@@ -3418,6 +3439,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["divided"],
         markers: [],
         description:
@@ -3602,6 +3624,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "divided"],
         markers: [],
         description:
@@ -3757,6 +3780,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -3900,6 +3924,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["basics"],
         markers: [],
         description:
@@ -4049,6 +4074,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -4196,6 +4222,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -4321,6 +4348,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -4486,6 +4514,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "divided", "basics"],
         markers: [],
         description:
@@ -4628,6 +4657,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -4776,6 +4806,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "divided", "basics"],
         markers: [],
         description:
@@ -4986,6 +5017,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["basics"],
         markers: [],
         description:
@@ -5201,6 +5233,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "basics"],
         markers: [],
         description:
@@ -5337,6 +5370,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: true,
         tags: ["new"],
         markers: [],
         description:
@@ -5538,6 +5572,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "basics"],
         markers: [],
         description:
@@ -5730,6 +5765,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["basics"],
         markers: [],
         description:
@@ -5905,6 +5941,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "basics"],
         markers: [],
         description:
@@ -6120,6 +6157,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable", "basics"],
         markers: [],
         description:
@@ -6326,6 +6364,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["basics"],
         markers: [],
         description:
@@ -6545,6 +6584,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable", "basics"],
         markers: [],
         description:
@@ -6765,6 +6805,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable", "basics"],
         markers: [],
         description:
@@ -7001,6 +7042,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "basics"],
         markers: [],
         description:
@@ -7215,6 +7257,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable"],
         markers: [],
         description:
@@ -7417,6 +7460,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["basics"],
         markers: [],
         description:
@@ -7583,6 +7627,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["basics"],
         markers: [],
         description:
@@ -7782,6 +7827,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -8003,6 +8049,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -8249,6 +8296,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -8515,6 +8563,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["basics"],
         markers: [],
         description:
@@ -8648,6 +8697,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: true,
         tags: ["new"],
         markers: [],
         description:
@@ -8861,6 +8911,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable", "basics"],
         markers: [],
         description:
@@ -9055,6 +9106,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -9256,6 +9308,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "basics"],
         markers: [],
         description:
@@ -9434,6 +9487,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "basics"],
         markers: [],
         description:
@@ -9649,6 +9703,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -9939,6 +9994,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["basics"],
         markers: [],
         description:
@@ -10228,6 +10284,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["basics"],
         markers: [],
         description:
@@ -10417,6 +10474,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["basics"],
         markers: [],
         description:
@@ -10676,6 +10734,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["basics"],
         markers: [],
         description:
@@ -10815,6 +10874,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -11012,6 +11072,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable", "basics"],
         markers: [],
         description:
@@ -11186,6 +11247,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable"],
         markers: [],
         description:
@@ -11330,6 +11392,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -11479,6 +11542,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: true,
         tags: ["new", "sustainable"],
         markers: [],
         description:
@@ -11634,6 +11698,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -11812,6 +11877,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -11962,6 +12028,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -12096,6 +12163,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -12221,6 +12289,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -12363,6 +12432,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -12523,6 +12593,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -12678,6 +12749,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -12817,6 +12889,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -12936,6 +13009,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: [],
         markers: [],
         description:
@@ -13116,6 +13190,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "basics"],
         markers: [],
         description:
@@ -13240,6 +13315,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable"],
         markers: [],
         description:
@@ -13407,6 +13483,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -13573,6 +13650,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -13704,6 +13782,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable"],
         markers: [],
         description:
@@ -13875,6 +13954,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: [],
         markers: [],
         description:
@@ -13992,6 +14072,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -14112,6 +14193,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -14256,6 +14338,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "basics"],
         markers: [],
         description:
@@ -14413,6 +14496,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -14555,6 +14639,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -14691,6 +14776,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: [],
         markers: [],
         description:
@@ -14796,6 +14882,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable"],
         markers: [],
         description:
@@ -15027,6 +15114,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable", "basics"],
         markers: [],
         description:
@@ -15152,6 +15240,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable"],
         markers: [],
         description:
@@ -15331,6 +15420,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -15478,6 +15568,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -15631,6 +15722,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -15761,6 +15853,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -15876,6 +15969,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: [],
         markers: [],
         description:
@@ -15990,6 +16084,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -16127,6 +16222,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -16223,6 +16319,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -16316,6 +16413,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -16421,6 +16519,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: [],
         markers: [],
         description:
@@ -16561,6 +16660,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -16656,6 +16756,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -16768,6 +16869,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -16865,6 +16967,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sustainable"],
         markers: [],
         description:
@@ -16958,6 +17061,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: [],
         markers: [],
         description:
@@ -17115,6 +17219,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -17221,6 +17326,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -17308,6 +17414,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -17469,6 +17576,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -17584,6 +17692,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "premium"],
         markers: ["H&M Premium Selection"],
         description:
@@ -17678,6 +17787,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: true,
         tags: ["new"],
         markers: [],
         description:
@@ -17771,6 +17881,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description: "Fluffy cushion cover with a hidden zip on the back.",
@@ -17931,6 +18042,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -18077,6 +18189,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -18176,6 +18289,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["premium"],
         markers: ["H&M Premium Selection"],
         description:
@@ -18270,6 +18384,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -18429,6 +18544,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: [],
         markers: [],
         description:
@@ -18520,6 +18636,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -18713,6 +18830,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -18851,6 +18969,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sustainable"],
         markers: [],
         description:
@@ -18955,6 +19074,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -19094,6 +19214,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: [],
         markers: [],
         description:
@@ -19194,6 +19315,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -19280,6 +19402,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -19375,6 +19498,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["sale"],
         markers: [],
         description:
@@ -19477,6 +19601,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -19576,6 +19701,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sale"],
         markers: [],
         description:
@@ -19672,6 +19798,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -19837,6 +19964,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -19936,6 +20064,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: true,
         tags: ["new", "sale"],
         markers: [],
         description:
@@ -20021,6 +20150,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -20121,6 +20251,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -20212,6 +20343,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -20305,6 +20437,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -20402,6 +20535,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["sale"],
         markers: [],
         description:
@@ -20513,6 +20647,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -20701,6 +20836,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -20796,6 +20932,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -20900,6 +21037,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new", "sale"],
         markers: [],
         description:
@@ -21024,6 +21162,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -21122,6 +21261,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: true,
         tags: ["new", "sale"],
         markers: [],
         description:
@@ -21214,6 +21354,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -21320,6 +21461,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -21445,6 +21587,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -21534,6 +21677,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -21620,6 +21764,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -21780,6 +21925,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: true,
         tags: ["sale"],
         markers: [],
         description:
@@ -21879,6 +22025,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -22058,6 +22205,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -22161,6 +22309,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: false,
+        isBestSeller: false,
         tags: ["sale"],
         markers: [],
         description:
@@ -22261,6 +22410,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:
@@ -22382,6 +22532,7 @@ const productsResponse: ProductsResponse = [
         ],
         availability: "Available",
         isNewArrival: true,
+        isBestSeller: false,
         tags: ["new"],
         markers: [],
         description:

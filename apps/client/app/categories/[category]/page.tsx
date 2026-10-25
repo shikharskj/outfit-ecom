@@ -2,12 +2,14 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
-import GroupShelf from "@/components/categories/GroupShelf";
-import GroupTiles from "@/components/categories/GroupTiles";
-import SaleStrip from "@/components/categories/SaleStrip";
+import ProductListing, { ProductListingView } from "@/components/categories/ProductListing";
 import { toProductCardData } from "@/utils/productCardData";
 import { CATEGORIES } from "@/utils/categories";
 import { getCategoryProducts, groupLabelOf } from "@/utils/getTaxonomy";
+import type { FacetKey } from "@/utils/productFilters";
+
+// Category pages filter by group; group pages filter by type instead.
+const FACETS: FacetKey[] = ["group", "size", "color", "price", "only"];
 
 type CategoryPageProps = {
   params: Promise<{ category: string }>;
@@ -40,43 +42,35 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const result = await getCategoryProducts(slug);
   if (!result) notFound();
 
-  const { category, products } = result;
+  const { category } = result;
+
+  // Recommended order: each group together, in the rail's group order.
+  const groupOrder = category.groups.map((group) => group.label);
+  const products = [...result.products]
+    .sort(
+      (a, b) =>
+        groupOrder.indexOf(groupLabelOf(a)) - groupOrder.indexOf(groupLabelOf(b)),
+    )
+    .map(toProductCardData);
 
   return (
-    <main className="mx-auto w-full max-w-[1600px] px-5 py-10 sm:px-8 md:px-12 md:py-14">
+    <main className="mx-auto w-full max-w-[1600px] px-5 pt-6 pb-16 sm:px-8 md:px-12 md:pt-8">
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: category.label }]} />
 
-      <Suspense fallback={null}>
-        <SaleStrip />
-      </Suspense>
-
-      <h1 className="text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
+      {/* Groups are picked in the rail's CATEGORY filter, so no tiles up here. */}
+      {/* The live count sits in the top bar; phones hide it there, so show it here. */}
+      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-gray-950">
         {category.label}
+        <span className="font-normal text-gray-500 md:hidden"> · {category.count} items</span>
       </h1>
-      <p className="mt-2 text-sm text-gray-600 sm:text-base">
-        {category.count} products · {category.groups.length} groups
-      </p>
 
-      <GroupTiles
-        groups={category.groups}
-        label={`${category.label} groups`}
-        className="mt-8 mb-14"
-      />
-
-      {/* A landing page: one row per group, in the same order as the tiles.
-          Each group's full grid, sort and paging live on its own page. */}
-      {category.groups.map((group) => (
-        <GroupShelf
-          key={group.slug}
-          id={`shelf-${group.slug}`}
-          eyebrow={`${group.count} ${group.count === 1 ? "product" : "products"}`}
-          title={group.label}
-          products={products
-            .filter((product) => groupLabelOf(product) === group.label)
-            .map(toProductCardData)}
-          viewAll={{ label: "View all", href: group.href }}
-        />
-      ))}
+      {/* Filters, sort and paging live in the URL, read at request time; until
+          then the static HTML shows the first page, unfiltered. */}
+      <Suspense
+        fallback={<ProductListingView products={products} facetKeys={FACETS} />}
+      >
+        <ProductListing products={products} facetKeys={FACETS} />
+      </Suspense>
     </main>
   );
 }

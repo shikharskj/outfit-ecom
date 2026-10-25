@@ -8,6 +8,8 @@ import SaleBanner from "@/components/home/SaleBanner";
 import SaleBannerSkeleton from "@/components/home/SaleBannerSkeleton";
 import NewArrivals from "@/components/home/NewArrivals";
 import NewArrivalsSkeleton from "@/components/home/NewArrivalsSkeleton";
+import Bestsellers from "@/components/home/Bestsellers";
+import BestsellersSkeleton from "@/components/home/BestsellersSkeleton";
 import OnSaleItems from "@/components/home/OnSaleItems";
 import OnSaleItemsSkeleton from "@/components/home/OnSaleItemsSkeleton";
 
@@ -38,6 +40,10 @@ export default async function Home() {
 
         <Suspense fallback={<NewArrivalsSkeleton />}>
           <NewArrivals />
+        </Suspense>
+
+        <Suspense fallback={<BestsellersSkeleton />}>
+          <Bestsellers />
         </Suspense>
       </div>
     </div>

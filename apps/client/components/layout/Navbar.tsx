@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cx } from "@/utils/cx";
 import { useShopStore } from "@/providers/shop-store-provider";
 import {
   SearchLg,
@@ -18,14 +20,28 @@ export type NavCategory = {
   label: string;
   href: string;
   groups: { label: string; href: string }[]; // shown in the dropdown
+  accent?: boolean; // shown in red, e.g. Sale
 };
 
-// Not a category, so it has no groups.
+// Collections that span every category, so they have no groups.
 const extraLinks: NavCategory[] = [
-  { label: "Bestsellers", href: "/categories/bestsellers", groups: [] },
+  { label: "New in", href: "/new-arrivals", groups: [] },
+  { label: "Sale", href: "/sale", groups: [], accent: true },
+  { label: "Bestsellers", href: "/bestsellers", groups: [] },
 ];
 
 const iconClassName = "size-5 shrink-0";
+
+// Reserves the bold width under the label, so going bold (on hover or when
+// active) changes only the weight and never nudges neighbouring links.
+const BoldSafe = ({ children }: { children: ReactNode }) => (
+  <span className="inline-grid">
+    <span aria-hidden="true" className="invisible col-start-1 row-start-1 font-bold">
+      {children}
+    </span>
+    <span className="col-start-1 row-start-1">{children}</span>
+  </span>
+);
 
 const itemsLabel = (label: string, count: number) =>
   count > 0 ? `${label}, ${count} ${count === 1 ? "item" : "items"}` : label;
@@ -46,6 +62,10 @@ type NavbarProps = {
 
 const Navbar = ({ categories: navCategories }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // The current page's item is bold; category pages also cover their groups,
+  // so /categories/women/tops marks Women.
+  const pathname = usePathname();
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   const wishlistCount = useShopStore((state) => state.wishlist.length);
   const bagCount = useShopStore((state) =>
     state.bag.reduce((total, line) => total + line.quantity, 0),
@@ -55,21 +75,30 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white transition-colors">
+    <header className="sticky top-0 z-50 bg-white shadow-[0_1px_8px_rgba(0,0,0,0.06)] transition-colors">
       <div className="relative mx-auto grid h-20 max-w-[1600px] grid-cols-[1fr_auto] items-center px-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-10">
         {/* Left: Categories */}
         <nav
           aria-label="Main navigation"
-          className="hidden items-center gap-4 xl:flex 2xl:gap-6"
+          className="hidden items-center gap-3 xl:flex 2xl:gap-6"
         >
           {categories.map((category) => (
             // The dropdown opens on hover and on keyboard focus, no JS needed.
             <div key={category.href} className="group relative">
               <Link
                 href={category.href}
-                className="whitespace-nowrap text-xs font-medium uppercase tracking-wide text-gray-700 transition-colors hover:text-black hover:font-bold"
+                aria-current={isActive(category.href) ? "page" : undefined}
+                className={cx(
+                  "whitespace-nowrap text-xs uppercase tracking-wide transition-colors hover:font-bold",
+                  isActive(category.href) ? "font-bold" : "font-medium",
+                  category.accent
+                    ? "text-red-700 hover:text-red-800"
+                    : isActive(category.href)
+                      ? "text-gray-950"
+                      : "text-gray-700 hover:text-black",
+                )}
               >
-                {category.label}
+                <BoldSafe>{category.label}</BoldSafe>
               </Link>
 
               {category.groups.length > 0 && (
@@ -206,7 +235,12 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
                   key={category.href}
                   className="group border-b border-gray-100"
                 >
-                  <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-medium uppercase tracking-wide text-gray-700 hover:text-gray-950 [&::-webkit-details-marker]:hidden">
+                  <summary
+                    className={cx(
+                      "flex cursor-pointer list-none items-center justify-between py-3 text-sm uppercase tracking-wide hover:text-gray-950 [&::-webkit-details-marker]:hidden",
+                      isActive(category.href) ? "font-bold text-gray-950" : "font-medium text-gray-700",
+                    )}
+                  >
                     {category.label}
                     <ChevronDown
                       aria-hidden="true"
@@ -218,6 +252,7 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
                       <Link
                         href={category.href}
                         onClick={closeMobileMenu}
+                        aria-current={pathname === category.href ? "page" : undefined}
                         className="block py-2 text-sm font-semibold text-gray-950"
                       >
                         Shop all {category.label.toLowerCase()}
@@ -228,7 +263,11 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
                         <Link
                           href={group.href}
                           onClick={closeMobileMenu}
-                          className="block py-2 text-sm text-gray-600 hover:text-gray-950"
+                          aria-current={pathname === group.href ? "page" : undefined}
+                          className={cx(
+                            "block py-2 text-sm hover:text-gray-950",
+                            pathname === group.href ? "font-semibold text-gray-950" : "text-gray-600",
+                          )}
                         >
                           {group.label}
                         </Link>
@@ -241,7 +280,16 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
                   key={category.href}
                   href={category.href}
                   onClick={closeMobileMenu}
-                  className="border-b border-gray-100 py-3 text-sm font-medium uppercase tracking-wide text-gray-700 hover:text-gray-950"
+                  aria-current={isActive(category.href) ? "page" : undefined}
+                  className={cx(
+                    "border-b border-gray-100 py-3 text-sm uppercase tracking-wide",
+                    isActive(category.href) ? "font-bold" : "font-medium",
+                    category.accent
+                      ? "text-red-700"
+                      : isActive(category.href)
+                        ? "text-gray-950"
+                        : "text-gray-700 hover:text-gray-950",
+                  )}
                 >
                   {category.label}
                 </Link>

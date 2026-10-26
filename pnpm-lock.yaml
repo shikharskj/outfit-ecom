@@ -93,6 +93,9 @@ importers:
 
   apps/client:
     dependencies:
+      '@untitledui/file-icons':
+        specifier: ^0.0.9
+        version: 0.0.9(react@19.3.0)
       '@untitledui/icons':
         specifier: ^0.0.23
         version: 0.0.23(react@19.3.0)
@@ -1899,6 +1902,11 @@ packages:
     resolution: {integrity: sha512-nAB74NfSNKknqQ1RrYj6uz8FcXEomu/MATJZxh/x+BArzN2U3JbOYC0APYzUIGhVY3m5hRxA8VPNdPBoG8txlA==}
     cpu: [x64]
     os: [win32]
+
+  '@untitledui/file-icons@0.0.9':
+    resolution: {integrity: sha512-wz3btNnSSv2hTujgyxEFL21oyjPtGTj3osU8ZEMe8nwdlmLQEILLe96NMg9b1ciiOC5UOWNDeYIt7IfxEM6qtg==}
+    peerDependencies:
+      react: '>= 18'
 
   '@untitledui/icons@0.0.23':
     resolution: {integrity: sha512-WoBtPCXaxweF0RXS9IuqgEeJkBmT7A9SszPHB+vQJOxeAl0hDTFXHlWXsooYniXQ0JmP4+7RADdhWb39GWFT8g==}
@@ -5644,6 +5652,10 @@ snapshots:
 
   '@unrs/resolver-binding-win32-x64-msvc@1.12.2':
     optional: true
+
+  '@untitledui/file-icons@0.0.9(react@19.3.0)':
+    dependencies:
+      react: 19.3.0
 
   '@untitledui/icons@0.0.23(react@19.3.0)':
     dependencies:

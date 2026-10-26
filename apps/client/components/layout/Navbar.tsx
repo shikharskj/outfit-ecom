@@ -1,9 +1,10 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cx } from "@/utils/cx";
+import { categoryBySlug } from "@/utils/categories";
 import { useShopStore } from "@/providers/shop-store-provider";
 import {
   SearchLg,
@@ -15,6 +16,11 @@ import {
   ChevronDown,
 } from "@untitledui/icons";
 import Image from "next/image";
+import ProfileHoverMenu from "./ProfileHoverMenu";
+import SearchPanel from "./search/SearchPanel";
+import { useSearchShortcut } from "./search/useSearchShortcut";
+import { Button } from "@/components/base/buttons/button";
+import { Tooltip } from "@/components/base/tooltip/tooltip";
 
 export type NavCategory = {
   label: string;
@@ -36,7 +42,10 @@ const iconClassName = "size-5 shrink-0";
 // active) changes only the weight and never nudges neighbouring links.
 const BoldSafe = ({ children }: { children: ReactNode }) => (
   <span className="inline-grid">
-    <span aria-hidden="true" className="invisible col-start-1 row-start-1 font-bold">
+    <span
+      aria-hidden="true"
+      className="invisible col-start-1 row-start-1 font-bold"
+    >
       {children}
     </span>
     <span className="col-start-1 row-start-1">{children}</span>
@@ -62,10 +71,18 @@ type NavbarProps = {
 
 const Navbar = ({ categories: navCategories }: NavbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Search panel: the icon, ⌘K / Ctrl+K, or "/" opens it.
+  const [searchOpen, setSearchOpen] = useState(false);
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  useSearchShortcut(openSearch);
   // The current page's item is bold; category pages also cover their groups,
   // so /categories/women/tops marks Women.
   const pathname = usePathname();
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  // Opened from a category page, search starts scoped to it ("in Women").
+  const scopeCategory = categoryBySlug(pathname.match(/^\/categories\/([^/]+)/)?.[1] ?? "");
+  const searchScope = scopeCategory ? { key: scopeCategory.key, label: scopeCategory.label } : null;
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`);
   const wishlistCount = useShopStore((state) => state.wishlist.length);
   const bagCount = useShopStore((state) =>
     state.bag.reduce((total, line) => total + line.quantity, 0),
@@ -84,13 +101,18 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
         >
           {categories.map((category) => (
             // The dropdown opens on hover and on keyboard focus, no JS needed.
-            <div key={category.href} className="group relative">
+            <div key={category.href} className="group relative h-full">
+              {" "}
               <Link
                 href={category.href}
                 aria-current={isActive(category.href) ? "page" : undefined}
                 className={cx(
-                  "whitespace-nowrap text-xs uppercase tracking-wide transition-colors hover:font-bold",
-                  isActive(category.href) ? "font-bold" : "font-medium",
+                  "relative whitespace-nowrap text-xs uppercase tracking-wide transition-colors",
+                  "after:absolute after:-bottom-8 after:left-0 after:h-1 after:w-full after:origin-left after:scale-x-0 after:bg-gray-950 after:transition-transform",
+                  "group-hover:after:scale-x-100 group-focus-within:after:scale-x-100",
+                  isActive(category.href)
+                    ? "font-bold"
+                    : "font-medium group-hover:font-bold",
                   category.accent
                     ? "text-red-700 hover:text-red-800"
                     : isActive(category.href)
@@ -100,14 +122,13 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
               >
                 <BoldSafe>{category.label}</BoldSafe>
               </Link>
-
               {category.groups.length > 0 && (
-                <div className="invisible absolute left-0 top-full z-50 pt-4 opacity-0 transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
-                  <ul className="min-w-56 rounded-xl bg-white p-2 shadow-lg ring-1 ring-black/5">
+                <div className="invisible absolute left-0 top-full z-50 pt-7.25 opacity-0 transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+                  <ul className="min-w-56 rounded-b-sm bg-white p-2 shadow-lg ring-1 ring-black/5">
                     <li>
                       <Link
                         href={category.href}
-                        className="block rounded-md px-3 py-2 text-sm font-semibold text-gray-950 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none"
+                        className="block rounded-sm px-3 py-2 text-sm font-semibold text-gray-950 hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none"
                       >
                         Shop all {category.label.toLowerCase()}
                       </Link>
@@ -116,7 +137,7 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
                       <li key={group.href}>
                         <Link
                           href={group.href}
-                          className="block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-950 focus-visible:bg-gray-50 focus-visible:text-gray-950 focus-visible:outline-none"
+                          className="block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-950 hover:font-bold focus-visible:bg-gray-50 focus-visible:text-gray-950 focus-visible:outline-none"
                         >
                           {group.label}
                         </Link>
@@ -185,37 +206,83 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
             </Link>
           </div>
 
-          <Link
-            href="/search"
-            aria-label="Search"
-            className="flex size-10 items-center justify-center rounded-lg hover:bg-gray-50"
-          >
-            <SearchLg className={iconClassName} />
-          </Link>
+          <Tooltip title="Search (⌘K)" placement="bottom">
+            <Button
+              color="tertiary"
+              size="md"
+              iconLeading={SearchLg}
+              aria-label="Search"
+              aria-haspopup="dialog"
+              onPress={openSearch}
+            />
+          </Tooltip>
+          <SearchPanel
+            // Keyed by scope so the "in Women" chip turns back on per category.
+            key={searchScope?.key ?? "all"}
+            isOpen={searchOpen}
+            onOpenChange={setSearchOpen}
+            scope={searchScope}
+          />
 
-          <Link
-            href="/account"
-            aria-label="My account"
-            className="hidden size-10 items-center justify-center rounded-lg hover:bg-gray-50 sm:flex"
-          >
-            <User01 className={iconClassName} />
-          </Link>
+          <div className="hidden sm:block">
+            <ProfileHoverMenu isLoggedIn={true} />
+          </div>
 
           <Link
             href="/wishlist"
             aria-label={itemsLabel("Wishlist", wishlistCount)}
-            className="relative flex size-10 items-center justify-center rounded-lg hover:bg-gray-50"
+            className={cx(
+              "group relative flex h-12 w-12 flex-col items-center justify-center gap-1 rounded-lg",
+              "after:absolute after:-bottom-4 after:left-0 after:h-1 after:w-full after:bg-gray-950 after:transition-transform after:content-['']",
+              isActive("/wishlist")
+                ? "after:scale-x-100"
+                : "after:scale-x-0 hover:after:scale-x-100",
+            )}
           >
-            <Heart className={iconClassName} />
+            <Heart
+              className={cx(
+                iconClassName,
+                "transition-all group-hover:stroke-[2.5]",
+                isActive("/wishlist") && "stroke-[2.5]",
+              )}
+            />
+            <span
+              className={cx(
+                "text-[10px] font-semibold leading-none transition-all group-hover:font-bold",
+                isActive("/wishlist") && "font-bold",
+              )}
+            >
+              Wishlist
+            </span>
             <CountBadge count={wishlistCount} />
           </Link>
 
           <Link
             href="/cart"
             aria-label={itemsLabel("Shopping bag", bagCount)}
-            className="relative flex size-10 items-center justify-center rounded-lg hover:bg-gray-50"
+            className={cx(
+              "group relative flex h-12 w-12 flex-col items-center justify-center gap-1 rounded-lg",
+              "after:absolute after:-bottom-4 after:left-0 after:h-1 after:w-full after:bg-gray-950 after:transition-transform after:content-['']",
+              isActive("/cart")
+                ? "after:scale-x-100"
+                : "after:scale-x-0 hover:after:scale-x-100",
+            )}
           >
-            <ShoppingBag01 className={iconClassName} />
+            <ShoppingBag01
+              className={cx(
+                iconClassName,
+                "transition-all group-hover:stroke-[2.5]",
+                isActive("/cart") && "stroke-[2.5]",
+              )}
+            />
+            <span
+              className={cx(
+                "text-[10px] font-semibold leading-none transition-all group-hover:font-bold",
+                isActive("/cart") && "font-bold",
+              )}
+            >
+              Bag
+            </span>
             <CountBadge count={bagCount} />
           </Link>
         </div>
@@ -238,7 +305,9 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
                   <summary
                     className={cx(
                       "flex cursor-pointer list-none items-center justify-between py-3 text-sm uppercase tracking-wide hover:text-gray-950 [&::-webkit-details-marker]:hidden",
-                      isActive(category.href) ? "font-bold text-gray-950" : "font-medium text-gray-700",
+                      isActive(category.href)
+                        ? "font-bold text-gray-950"
+                        : "font-medium text-gray-700",
                     )}
                   >
                     {category.label}
@@ -252,7 +321,9 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
                       <Link
                         href={category.href}
                         onClick={closeMobileMenu}
-                        aria-current={pathname === category.href ? "page" : undefined}
+                        aria-current={
+                          pathname === category.href ? "page" : undefined
+                        }
                         className="block py-2 text-sm font-semibold text-gray-950"
                       >
                         Shop all {category.label.toLowerCase()}
@@ -263,10 +334,14 @@ const Navbar = ({ categories: navCategories }: NavbarProps) => {
                         <Link
                           href={group.href}
                           onClick={closeMobileMenu}
-                          aria-current={pathname === group.href ? "page" : undefined}
+                          aria-current={
+                            pathname === group.href ? "page" : undefined
+                          }
                           className={cx(
                             "block py-2 text-sm hover:text-gray-950",
-                            pathname === group.href ? "font-semibold text-gray-950" : "text-gray-600",
+                            pathname === group.href
+                              ? "font-semibold text-gray-950"
+                              : "text-gray-600",
                           )}
                         >
                           {group.label}

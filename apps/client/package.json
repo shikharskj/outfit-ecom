@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@untitledui/file-icons": "^0.0.9",
     "@untitledui/icons": "^0.0.23",
     "embla-carousel": "^8.6.0",
     "embla-carousel-react": "^8.6.0",

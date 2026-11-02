@@ -1,6 +1,10 @@
 <div align="center">
 
-<img src="apps/client/public/outfit-wordmark.svg" alt="Outfit" height="48" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/outfit-wordmark-white.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="apps/client/public/outfit-wordmark.svg" />
+  <img src="apps/client/public/outfit-wordmark.svg" alt="Outfit" height="48" />
+</picture>
 
 # Outfit: Fashion E-commerce Platform
 
